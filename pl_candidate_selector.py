@@ -417,6 +417,15 @@ def main():
         messagebox.showinfo("Done", f"Processing completed.\nOutput: {output_path}")
     except Exception as e:
         fail(str(e))
+    finally:
+        try:
+            root.quit()
+        except Exception:
+            pass
+        try:
+            root.destroy()
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":
