@@ -216,16 +216,25 @@ def load_kb(kb_root: str):
 
 
 
+def ensure_dialog_front(root):
+    try:
+        root.attributes("-topmost", True)
+        root.update_idletasks()
+        root.update()
+        root.attributes("-topmost", False)
+    except Exception:
+        pass
+
+
 def notify_done(root, output_path: str):
     msg = f"Processing completed.\nOutput: {output_path}"
     # Default: do not block exit on modal dialog. Set PL_SHOW_DONE_POPUP=1 to force popup.
     if os.environ.get("PL_SHOW_DONE_POPUP", "0") == "1":
         try:
-            root.deiconify()
             root.lift()
             root.attributes("-topmost", True)
             root.update()
-            messagebox.showinfo("Done", msg)
+            messagebox.showinfo("Done", msg, parent=root)
         except Exception:
             print(msg)
     else:
@@ -293,15 +302,19 @@ def main():
 
     root = tk.Tk()
     root.withdraw()
+    ensure_dialog_front(root)
 
+    ensure_dialog_front(root)
     input_path = filedialog.askopenfilename(
+        parent=root,
         title="Select input Excel/CSV file",
         filetypes=[("Data files", "*.xlsx *.xls *.csv"), ("All files", "*.*")]
     )
     if not input_path:
         fail("No input file selected. Operation cancelled.")
 
-    kb_root = filedialog.askdirectory(title="Select KB root directory (contains kb_manifest.json)")
+    ensure_dialog_front(root)
+    kb_root = filedialog.askdirectory(parent=root, title="Select KB root directory (contains kb_manifest.json)")
     if not kb_root:
         fail("No KB directory selected. Operation cancelled.")
 
@@ -312,10 +325,12 @@ def main():
     default_out_name = f"{stem}_scored{default_ext}"
     default_output_path = os.path.join(in_dir, default_out_name)
 
+    ensure_dialog_front(root)
     out_path_input = simpledialog.askstring(
         "Output file path",
         "Enter full output file path (or file name). Must end with .xlsx or .csv:",
-        initialvalue=default_output_path
+        initialvalue=default_output_path,
+        parent=root
     )
     if out_path_input is None or not out_path_input.strip():
         fail("Output file path is empty/cancelled. Operation cancelled.")
@@ -324,7 +339,8 @@ def main():
     output_path = os.path.abspath(output_path)
 
     confirm_msg = f"Output will be written to:\n{output_path}\n\nContinue?"
-    if not messagebox.askokcancel("Confirm output path", confirm_msg):
+    ensure_dialog_front(root)
+    if not messagebox.askokcancel("Confirm output path", confirm_msg, parent=root):
         fail("User cancelled output path confirmation.")
 
     try:
@@ -437,6 +453,10 @@ def main():
     finally:
         try:
             root.quit()
+        except Exception:
+            pass
+        try:
+            root.attributes("-topmost", False)
         except Exception:
             pass
         try:
