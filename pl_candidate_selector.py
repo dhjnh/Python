@@ -6,6 +6,7 @@ import re
 import math
 import pandas as pd
 from tqdm import tqdm
+tqdm.monitor_interval = 0  # avoid background monitor thread keeping process alive
 import tkinter as tk
 from tkinter import filedialog, simpledialog, messagebox
 
@@ -426,7 +427,8 @@ def main():
             root.destroy()
         except Exception:
             pass
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
