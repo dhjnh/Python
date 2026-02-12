@@ -214,6 +214,22 @@ def load_kb(kb_root: str):
     return stopwords, guard, synonym_map, links
 
 
+
+
+def notify_done(root, output_path: str):
+    msg = f"Processing completed.\nOutput: {output_path}"
+    # Default: do not block exit on modal dialog. Set PL_SHOW_DONE_POPUP=1 to force popup.
+    if os.environ.get("PL_SHOW_DONE_POPUP", "0") == "1":
+        try:
+            root.deiconify()
+            root.lift()
+            root.attributes("-topmost", True)
+            root.update()
+            messagebox.showinfo("Done", msg)
+        except Exception:
+            print(msg)
+    else:
+        print(msg)
 def split_tokens(text: str):
     return [t for t in re.split(r"[^a-z0-9]+", text.lower()) if t]
 
@@ -415,7 +431,7 @@ def main():
         for k, v in bins.items():
             print(f"  {k}: {v}")
 
-        messagebox.showinfo("Done", f"Processing completed.\nOutput: {output_path}")
+        notify_done(root, output_path)
     except Exception as e:
         fail(str(e))
     finally:
